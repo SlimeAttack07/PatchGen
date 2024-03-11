@@ -19,6 +19,10 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PlatformUI;
 
+/** Handler for the 'codegen' button in the view screen.
+ * Handles generation of the files that developers can use to automate parts of the patch note generation process.
+ * 
+ */
 public class GenCodeHandler extends AbstractHandler {
 
 	@Override
@@ -42,9 +46,9 @@ public class GenCodeHandler extends AbstractHandler {
 		return null;
 	}
 
-	/** Generate files
+	/** Generate files.
 	 * 
-	 * @param project Project to generate files for
+	 * @param project Project to generate files for.
 	 */
 	private void createFiles(IProject project) {
 		try {
@@ -74,7 +78,7 @@ public class GenCodeHandler extends AbstractHandler {
 		}
 	}
 
-	/** Get the active project
+	/** Get the active project.
 	 * 
 	 * @return The active project, or null if none are active.
 	 */

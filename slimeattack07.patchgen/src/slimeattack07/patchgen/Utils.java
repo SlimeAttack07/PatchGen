@@ -6,11 +6,17 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.Path;
 
+/** Utility class with convenience methods used by other classes.
+ * 
+ */
 public class Utils {
 
-	/** Request a file to dump the patch notes in
+	/** Request a file to dump data in.
 	 * 
-	 * @param project Project to generate files for
+	 * @param project Project to generate file for.
+	 * @param dir The patchgen subdirectory to put the file in.
+	 * @param name The name of the file.
+	 * @param extension The extension of the file.
 	 */
 	@Nullable
 	public static IFile requestFile(IProject project, String dir, String name, String extension) {

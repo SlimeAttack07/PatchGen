@@ -22,6 +22,9 @@ import com.google.gson.JsonObject;
 import slimeattack07.patchgen.generators.PatchNoteGenerator;
 import slimeattack07.patchgen.generators.PlainTextGenerator;
 
+/** Utility class for storing and handling data for patch note entries.
+ * 
+ */
 public class PatchNoteData {
 	private JsonArray data;
 	
@@ -32,16 +35,29 @@ public class PatchNoteData {
 	public static final String DATA = "data";
 	public static final String META = "meta";
 	
+	/** Constructor.
+	 * 
+	 * @param data The initial data.
+	 */
 	public PatchNoteData(JsonArray data) {
 		this.data = data;
 	}
 	
+	/** Get the data stored in this instance.
+	 * 
+	 * @return The data.
+	 */
 	public JsonArray getData() {
 		return data;
 	}
 	
 	// TODO: Strategy would be as follow: Sort on (nested) categories first. If category priority unknown, ask user.
 	// Save category info in file somewhere. Make method later for changing these afterwards.
+	/** Generate patch notes. The instance this method is called for will serve as the newest data.
+	 * 
+	 * @param old_data The old data to compare to when searching for changes.
+	 * @param project The project to generate patch notes for.
+	 */
 	public void genNotes(PatchNoteData old_data, IProject project) {
 		CategoryData cats = saveCategories(project); // Ensure categories are up-to-date
 		
@@ -94,6 +110,14 @@ public class PatchNoteData {
 		}
 	}
 	
+	/** Generating categories in the patch notes.
+	 * 
+	 * @param gen The patch note generator to use.
+	 * @param cats The category data containing the categories to generate.
+	 * @param id The category to generate. This method will generate any parent categories for this id that have not
+	 * been generated yet.
+	 * @return The remaining category data with the generated entries removed.
+	 */
 	private CategoryData genCategories(PatchNoteGenerator gen, CategoryData cats, String id) {
 		String[] parts = id.split("\\.");
 		String temp = "";
@@ -116,6 +140,12 @@ public class PatchNoteData {
 		return cats;
 	}
 	
+	/** Save all detected categories to file. Will ask the user to provide a name and priority for any categories that 
+	 * were not saved to file before.
+	 * 
+	 * @param project The project to save the categories for.
+	 * @return The detected category data.
+	 */
 	@Nullable
 	private CategoryData saveCategories(IProject project) {
 		IFile ifile = Utils.requestFile(project, "data", "categories", ".json");
@@ -177,6 +207,11 @@ public class PatchNoteData {
 		return cats;
 	}
 	
+	/** Asks the user for a positive integer. Currently uses Scanner, but this will change in the future.
+	 * 
+	 * @param scan The scanner to use.
+	 * @return The positive integer entered by the user.
+	 */
 	private int askPositiveInt(Scanner scan) {
 		String prio_string = scan.nextLine();
 		int pint = -1;
@@ -199,6 +234,12 @@ public class PatchNoteData {
 	}
 	
 	// TODO: Change system.out to log file and patch note generation.
+	/** Compares values between two entries.
+	 * 
+	 * @param entry The entry to compare with match.
+	 * @param match The old version of the entry.
+	 * @return The generated String detailing the detected change, or an empty String if no change was detected.
+	 */
 	private String compareValues(JsonObject entry, JsonObject match) {
 		JsonElement old_value = match.get(VALUE);
 		JsonElement new_value = entry.get(VALUE);
@@ -238,9 +279,9 @@ public class PatchNoteData {
 		return "";
 	}
 	
-	/** Get the name of an entry, or the id if no name is present
+	/** Get the name of an entry, or the id if no name is present.
 	 * 
-	 * @param entry The entry to return the name for
+	 * @param entry The entry to return the name for.
 	 * @return The name if present, the id otherwise.
 	 */
 	private String getNameOrId(JsonObject entry) {
@@ -252,7 +293,7 @@ public class PatchNoteData {
 	
 	/** Check if the data contains an entry with the specified id.
 	 * 
-	 * @param id The id to check for
+	 * @param id The id to check for.
 	 * @return True if id is contained in data, false otherwise.
 	 */
 	public boolean contains(String id) {
@@ -268,10 +309,10 @@ public class PatchNoteData {
 		return false;
 	}
 	
-	/** Get JsonObject by id
+	/** Get JsonObject by id.
 	 * 
-	 * @param id Id of the object
-	 * @return The object with the given id, or null if no such object exists
+	 * @param id Id of the object.
+	 * @return The object with the given id, or null if no such object exists.
 	 */
 	@Nullable
 	public JsonObject get(String id) {
@@ -287,6 +328,10 @@ public class PatchNoteData {
 		return null;
 	}
 
+	/** Sorts the data in this entry to enable easier handling of category generation.
+	 * 
+	 * @param cats The category data to use for sorting.
+	 */
 	public void sortData(CategoryData cats) {
 		List<JsonElement> list = data.asList();
 		Collections.sort(list, new CategoryComparator(cats));
@@ -294,13 +339,25 @@ public class PatchNoteData {
 		data = gson.toJsonTree(list).getAsJsonArray();
 	}
 	
+	/** Comparator class for sorting with category data.
+	 * 
+	 */
 	private class CategoryComparator implements Comparator<JsonElement>{
 		private CategoryData cats;
 		
+		/** Constructor.
+		 * 
+		 * @param cats The category data to use.
+		 */
 		public CategoryComparator(CategoryData cats) {
 			this.cats = cats;
 		}
 		
+		/** Get the priority of a given category id.
+		 * 
+		 * @param id The id of the category.
+		 * @return The priority of the category, or -1 of no such category exists.
+		 */
 		private int getPrio(String id) {
 			if (cats.contains(id)){
 				return cats.getPriority(id);
@@ -309,6 +366,11 @@ public class PatchNoteData {
 			return -1;
 		}
 		
+		/** Get category id from a JsonObject.
+		 * 
+		 * @param jo The object to get the category id from.
+		 * @return The category id, or the empty String if no category id is present.
+		 */
 		private String getCat(JsonObject jo) {
 			if (jo.has(CATEGORY))
 				return jo.get(CATEGORY).getAsString();
@@ -316,6 +378,11 @@ public class PatchNoteData {
 			return "";
 		}
 		
+		/** Get display name from a JsonObject.
+		 * 
+		 * @param jo The object to get the display name from.
+		 * @return The display name, or the empty String if no category id is present.
+		 */
 		private String getName(JsonObject jo) {
 			if (jo.has(NAME)){
 				return jo.get(NAME).getAsString();
@@ -323,7 +390,7 @@ public class PatchNoteData {
 			
 			return "";
 		}
-		// Example: ab.cd vs ab.ef.a   probably will just make a class for categories and be like 'if it aint in there i no gen it'
+		
 		@Override
 		public int compare(JsonElement o1, JsonElement o2) {
 			if(o1.isJsonObject() && o2.isJsonObject()) {

@@ -1,7 +1,14 @@
 package slimeattack07.patchgen;
 
+/** Class holding the @Watchable annotation code for the CodeGen handler.
+ * 
+ */
 public class Watchable{
 	// TODO: Test if we can change policy to SOURCE.
+	/** Returns the code.
+	 * 
+	 * @return The code.
+	 */
 	public static String getCode() {
 		return """
 package patchgen.annotations;

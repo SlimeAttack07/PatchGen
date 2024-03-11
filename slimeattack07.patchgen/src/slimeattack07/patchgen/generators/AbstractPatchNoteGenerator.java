@@ -6,12 +6,15 @@ import java.io.InputStream;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
 
+/** Abstract patch note generator.
+ * 
+ */
 public abstract class AbstractPatchNoteGenerator {
 	
 	/** Add content to file.
 	 * 
-	 * @param ifile File to add content to
-	 * @param content Content to add
+	 * @param ifile File to add content to.
+	 * @param content Content to add.
 	 */
 	public void addToFile(IFile ifile, String content) {
 		InputStream is = toInputStream(content);
@@ -26,10 +29,10 @@ public abstract class AbstractPatchNoteGenerator {
 		}
 	}
 	
-	/** Turn a String into an InputStream
+	/** Turn a String into an InputStream.
 	 * 
-	 * @param input The String to transform
-	 * @return The String as InputStream
+	 * @param input The String to transform.
+	 * @return The String as InputStream.
 	 */
 	public InputStream toInputStream(String input) {
 		return new ByteArrayInputStream(input.getBytes());

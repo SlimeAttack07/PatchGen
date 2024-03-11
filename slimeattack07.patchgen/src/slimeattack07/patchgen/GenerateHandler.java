@@ -37,6 +37,9 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
+/** Handler for the 'generate' button in the view screen.
+ * Handles generation of patch notes as well as updating the monitored data.
+ */
 public class GenerateHandler extends AbstractHandler {
 	// TODO: Make log to expose what plugin is doing and if it has encountered errors.
 	@Override
@@ -60,7 +63,7 @@ public class GenerateHandler extends AbstractHandler {
 		return null;
 	}
 
-	/** Get the active project
+	/** Get the active project.
 	 * 
 	 * @return The active project, or null if none are active.
 	 */
@@ -120,6 +123,9 @@ public class GenerateHandler extends AbstractHandler {
 				data_object.add(PatchNoteData.DATA, data);
 				createFiles(project, data_object, true);
 			}
+			else {
+				System.out.println("Nothing changed!");
+			}
 			
 		} catch (JavaModelException e) {
 			e.printStackTrace();
@@ -128,7 +134,7 @@ public class GenerateHandler extends AbstractHandler {
 	
 	/** Process fields in a class.
 	 * 
-	 * @param type The class
+	 * @param type The class to process.
 	 */
 	private JsonArray processFields(IType type) {
 		JsonArray data = new JsonArray();
@@ -150,7 +156,7 @@ public class GenerateHandler extends AbstractHandler {
 	
 	/** Process annotations on a field.
 	 * 
-	 * @param field The field to process
+	 * @param field The field to process.
 	 */
 	@Nullable
 	private JsonObject processAnnotations(IField field) {
@@ -194,11 +200,11 @@ public class GenerateHandler extends AbstractHandler {
 		return null;
 	}
 	
-	/** Generate JSON database
+	/** Generate JSON database.
 	 * 
-	 * @param project Project to generate files for
-	 * @param result The resulted text to put in the file
-	 * @param overwrite Whether an existing file should be overwritten
+	 * @param project Project to generate files for.
+	 * @param result The resulted text to put in the file.
+	 * @param overwrite Whether an existing file should be overwritten.
 	 */
 	private void createFiles(IProject project, JsonObject result, boolean overwrite) {
 		try {
@@ -244,6 +250,11 @@ public class GenerateHandler extends AbstractHandler {
 		}
 	}
 	
+	/** Compare two versions. New version should be provided, old version will be requested from user by this method.
+	 * 
+	 * @param project Project to compare versions for.
+	 * @param new_version The new version.
+	 */
 	private void compareToVersion(IProject project, String new_version) {
 		// TODO: Add version check. Temporarily using System.in for testing.
 		@SuppressWarnings("resource")
