@@ -1,0 +1,13 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Patchgen
+Bundle-SymbolicName: slimeattack07.patchgen;singleton:=true
+Bundle-Vendor: SlimeAttack07
+Bundle-Version: 1.0.0.qualifier
+Require-Bundle: org.eclipse.ui;bundle-version="3.205.0",
+ org.eclipse.core.runtime;bundle-version="3.30.0",
+ org.eclipse.core.resources;bundle-version="3.20.0",
+ org.eclipse.jdt.core;bundle-version="3.36.0",
+ com.google.gson;bundle-version="2.10.1"
+Automatic-Module-Name: slimeattack07.patchgen
+Bundle-RequiredExecutionEnvironment: JavaSE-17

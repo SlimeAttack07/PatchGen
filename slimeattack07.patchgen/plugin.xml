@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="org.eclipse.ui.views">
+      <view
+            category="slimeattack07.patchgen.patchgencat"
+            class="slimeattack07.patchgen.PatchGen"
+            id="slimeattack07.patchgen.patchgen"
+            name="Patch note generator"
+            restorable="true">
+      </view>
+      <category
+            id="slimeattack07.patchgen.patchgencat"
+            name="Patch note generator">
+      </category>
+   </extension>
+   <extension
+         point="org.eclipse.ui.menus">
+      <menuContribution
+            allPopups="false"
+            locationURI="toolbar:slimeattack07.patchgen.patchgen">
+         <command
+               commandId="slimeattack07.patchgen.command_generate"
+               style="push">
+         </command>
+         <command
+               commandId="slimeattack07.patchgen.command_gencode"
+               style="push">
+         </command>
+      </menuContribution>
+   </extension>
+   <extension
+         point="org.eclipse.ui.commands">
+      <command
+            description="Generate patch notes"
+            id="slimeattack07.patchgen.command_generate"
+            name="Generate">
+      </command>
+      <command
+            description="Generate code in project for generator usage"
+            id="slimeattack07.patchgen.command_gencode"
+            name="GenCode">
+      </command>
+   </extension>
+   <extension
+         point="org.eclipse.ui.handlers">
+      <handler
+            class="slimeattack07.patchgen.GenerateHandler"
+            commandId="slimeattack07.patchgen.command_generate">
+      </handler>
+      <handler
+            class="slimeattack07.patchgen.GenCodeHandler"
+            commandId="slimeattack07.patchgen.command_gencode">
+      </handler>
+   </extension>
+
+</plugin>
