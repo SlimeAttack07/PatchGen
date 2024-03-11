@@ -1,7 +1,5 @@
 package slimeattack07.patchgen.generators;
 
-import java.util.Scanner;
-
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 
@@ -19,13 +17,9 @@ public class PlainTextGenerator extends AbstractPatchNoteGenerator implements Pa
 	 * 
 	 * @param project The project to generate patch notes for.
 	 */
-	public PlainTextGenerator(IProject project) {
+	public PlainTextGenerator(IProject project, String old_version, String new_version) {
 		this.PROJECT = project;
-		// TODO: Add version check. Temporarily using System.in for testing.
-		@SuppressWarnings("resource")
-		Scanner scan = new Scanner(System.in);
-		System.out.println("PatchGen: Specify version:");
-		String version = scan.nextLine();
+		String version = String.format("%s_to_%s", old_version, new_version);
 		this.IFILE = Utils.requestFile(PROJECT, "patchnotes", version, ".txt");
 		
 		IS_VALID = this.IFILE != null;

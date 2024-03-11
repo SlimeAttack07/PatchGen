@@ -8,7 +8,6 @@ import java.io.Reader;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Scanner;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -58,7 +57,7 @@ public class PatchNoteData {
 	 * @param old_data The old data to compare to when searching for changes.
 	 * @param project The project to generate patch notes for.
 	 */
-	public void genNotes(PatchNoteData old_data, IProject project) {
+	public void genNotes(PatchNoteData old_data, IProject project, String old_version, String new_version) {
 		CategoryData cats = saveCategories(project); // Ensure categories are up-to-date
 		
 		if(cats == null) {
@@ -69,7 +68,7 @@ public class PatchNoteData {
 		// Sort per category to make generation easier.
 		sortData(cats);
 		
-		PatchNoteGenerator gen = new PlainTextGenerator(project);
+		PatchNoteGenerator gen = new PlainTextGenerator(project, old_version, new_version);
 		String last_category = "";
 		int last_depth = 0;
 		
@@ -164,8 +163,6 @@ public class PatchNoteData {
 			}
 		}
 		
-		Scanner scan = new Scanner(System.in);
-		
 		for(JsonElement element : data) {
 			if(element.isJsonObject()) {
 				JsonObject jo = element.getAsJsonObject();
@@ -178,10 +175,12 @@ public class PatchNoteData {
 						temp += part;
 						
 						if(!cats.contains(temp)) {
-							System.out.println(String.format("Please specify name for category '%s'", temp));
-							String name = scan.nextLine();
-							System.out.println(String.format("Please specify priority for category '%s'", temp));
-							int prio = askPositiveInt(scan);
+							System.out.println(String.format("Asking for name for category '%s'", temp));
+							String name = Utils.displayNotBlankInput("Category definition", 
+									String.format("Please specify name for category '%s'", temp));
+							System.out.println(String.format("Asking for priority for category '%s'", temp));
+							int prio = Utils.displayPositiveIntInput("Category definition", 
+									String.format("Please specify priority for category '%s'", temp));
 							cats.addCategory(temp, name, prio);
 						}
 						
@@ -205,32 +204,6 @@ public class PatchNoteData {
 		}
 		
 		return cats;
-	}
-	
-	/** Asks the user for a positive integer. Currently uses Scanner, but this will change in the future.
-	 * 
-	 * @param scan The scanner to use.
-	 * @return The positive integer entered by the user.
-	 */
-	private int askPositiveInt(Scanner scan) {
-		String prio_string = scan.nextLine();
-		int pint = -1;
-		
-		while(pint < 0) {
-			try {
-				pint = Integer.parseInt(prio_string);
-				
-				if(pint < 0) {
-					System.out.println("Priority must be a positive integer, please try again:");
-					prio_string = scan.nextLine();
-				}
-			} catch(NumberFormatException e) {
-				System.out.println("Priority must be a positive integer, please try again:");
-				prio_string = scan.nextLine();
-			}
-		}
-		
-		return pint;
 	}
 	
 	// TODO: Change system.out to log file and patch note generation.
