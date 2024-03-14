@@ -28,6 +28,10 @@
                commandId="slimeattack07.patchgen.command_gencode"
                style="push">
          </command>
+         <command
+               commandId="slimeattack07.patchgen.command_addtext"
+               style="push">
+         </command>
       </menuContribution>
    </extension>
    <extension
@@ -42,6 +46,11 @@
             id="slimeattack07.patchgen.command_gencode"
             name="GenCode">
       </command>
+      <command
+            description="Add text to your patch notes"
+            id="slimeattack07.patchgen.command_addtext"
+            name="AddText">
+      </command>
    </extension>
    <extension
          point="org.eclipse.ui.handlers">
@@ -52,6 +61,10 @@
       <handler
             class="slimeattack07.patchgen.GenCodeHandler"
             commandId="slimeattack07.patchgen.command_gencode">
+      </handler>
+      <handler
+            class="AddTextHandler"
+            commandId="slimeattack07.patchgen.command_addtext">
       </handler>
    </extension>
 

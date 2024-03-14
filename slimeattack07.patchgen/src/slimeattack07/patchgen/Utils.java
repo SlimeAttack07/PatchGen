@@ -7,6 +7,7 @@ import java.util.Arrays;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.dialogs.IInputValidator;
@@ -14,13 +15,46 @@ import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.window.Window;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PlatformUI;
 
 /** Utility class with convenience methods used by other classes.
  * 
  */
 public class Utils {
+	/** Get the active project.
+	 * 
+	 * @return The active project, or null if none are active.
+	 */
+	@Nullable
+	public static IProject getProject() {
+		IProject project = null;
+		
+		try { // Multiple methods used here can return null, so this saves us from having to check all of them.
+			// Find the active project
+			IWorkbenchPage activePage = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+			IEditorPart activeEditor = activePage.getActiveEditor();
+			
+	
+			if (activeEditor != null) {
+				IEditorInput input = activeEditor.getEditorInput();
+				project = input.getAdapter(IProject.class);
+				if (project == null) {
+					IResource resource = input.getAdapter(IResource.class);
+					if (resource != null) {
+						project = resource.getProject();
+					}
+				}
+			}
+		} catch (NullPointerException e) {
+			return null;
+		}
 
+		return project;
+	}
+	
 	/** Request a unique file to dump data in. If file already exists, user will be asked if it can be overwritten.
 	 * 
 	 * @param project Project to generate file for.

@@ -34,6 +34,8 @@ public class PatchNoteData {
 	public static final String DATA = "data";
 	public static final String META = "meta";
 	public static final String BULLETED = "bulleted";
+	public static final String DEVELOPER_COMMENT = "developer_comment";
+	public static final String IS_TEXT = "is_text";
 	
 	/** Constructor.
 	 * 
@@ -59,6 +61,12 @@ public class PatchNoteData {
 	 * @param project The project to generate patch notes for.
 	 */
 	public void genNotes(PatchNoteData old_data, IProject project, String old_version, String new_version) {
+		// Add the text entries to the data so we can also generate them.
+		JsonArray text_array = retrieveText(project);
+		
+		if(text_array != null)
+			data.addAll(text_array);
+		
 		CategoryData cats = saveCategories(project); // Ensure categories are up-to-date
 		
 		if(cats == null) {
@@ -68,6 +76,7 @@ public class PatchNoteData {
 		
 		// Sort per category to make generation easier.
 		sortData(cats);
+		System.out.println("Data is now: " + data.toString());
 		
 		PatchNoteGenerator gen = new PlainTextGenerator(project, String.format("%s_to_%s", old_version, new_version));
 		
@@ -90,28 +99,42 @@ public class PatchNoteData {
 				
 				String id = entry.get(ID).getAsString();
 				
-				if (old_data.contains(id)) {
-					JsonObject match = old_data.get(id);
+				if(entry.has(IS_TEXT) && entry.get(IS_TEXT).getAsBoolean()) {
+					String value = entry.has(VALUE) ? entry.get(VALUE).getAsString() : "NOTEXT";
+					boolean is_developer_comment = entry.has(DEVELOPER_COMMENT) ? entry.get(DEVELOPER_COMMENT).getAsBoolean() : false;
 					
-					// Shouldn't happen, but better safe than sorry
-					if(match != null) {
-						String text = compareValues(entry, match);
+					// Generate needed categories that haven't been generated yet.
+					if(entry.has(CATEGORY)) {
+						String cat = entry.get(CATEGORY).getAsString();
 						
-						if(!text.isBlank()) {
-							if(entry.has(CATEGORY)) {
-								String cat = entry.get(CATEGORY).getAsString();
-								
-								if(!cat.equals(last_category)) {
-									last_depth = (int) cat.chars().filter(ch -> ch == '.').count();
-									cats = genCategories(gen, cats, cat);
-									last_category = cat;
-								}
-							}
-							
-							boolean bulleted = entry.has(PatchNoteData.BULLETED) ? 
-									entry.get(PatchNoteData.BULLETED).getAsBoolean() : true;
-							gen.addText(text, last_depth, bulleted);
+						if(!cat.equals(last_category)) {
+							last_depth = (int) cat.chars().filter(ch -> ch == '.').count();
+							cats = genCategories(gen, cats, cat);
+							last_category = cat;
 						}
+					}
+					
+					gen.addText(value, last_depth, is_developer_comment);
+				}
+				else if (old_data.contains(id)) {
+					JsonObject match = old_data.get(id);
+					String text = compareValues(entry, match);
+						
+					if(!text.isBlank()) {
+						// Generate needed categories that haven't been generated yet.
+						if(entry.has(CATEGORY)) {
+							String cat = entry.get(CATEGORY).getAsString();
+							
+							if(!cat.equals(last_category)) {
+								last_depth = (int) cat.chars().filter(ch -> ch == '.').count();
+								cats = genCategories(gen, cats, cat);
+								last_category = cat;
+							}
+						}
+						
+						boolean bulleted = entry.has(PatchNoteData.BULLETED) ? 
+								entry.get(PatchNoteData.BULLETED).getAsBoolean() : true;
+						gen.addContent(text, last_depth, bulleted);
 					}
 				}
 			}
@@ -172,7 +195,35 @@ public class PatchNoteData {
 			}
 		}
 		
-		for(JsonElement element : data) {
+		cats = saveCategoryHelper(cats, data);
+		
+		JsonObject data_object = new JsonObject();
+		data_object.add(DATA, cats.getData());
+		InputStream is = new ByteArrayInputStream(data_object.toString().getBytes());
+		
+		try {
+			if(ifile.exists())
+				ifile.setContents(is, false, true, null);
+			else
+				ifile.create(is, false, null);
+		} catch (CoreException e) {
+			e.printStackTrace();
+		}
+		
+		return cats;
+	}
+	
+	/** Helper method for saving category data. Method will ask user to provide name and priority for any categories for which
+	 * these are not known yet.
+	 * 
+	 * @param categories The known category data.
+	 * @param data_array The data array to process.
+	 * @return The updated category data.
+	 */
+	private CategoryData saveCategoryHelper(CategoryData categories, JsonArray data_array) {
+		CategoryData cats = categories;
+		
+		for(JsonElement element : data_array) {
 			if(element.isJsonObject()) {
 				JsonObject jo = element.getAsJsonObject();
 				
@@ -199,20 +250,30 @@ public class PatchNoteData {
 			}
 		}
 		
-		JsonObject data = new JsonObject();
-		data.add(DATA, cats.getData());
-		InputStream is = new ByteArrayInputStream(data.toString().getBytes());
+		return cats;
+	}
+	
+	// TODO: Add way to clear text
+	/** Retrieve text written by developers.
+	 * 
+	 * @param project The project to retrieve the text for.
+	 * @return The text data, or null if none is found.
+	 */
+	@Nullable
+	private JsonArray retrieveText(IProject project) {
+		IFile ifile = Utils.requestFile(project, "data", "text", ".json");
 		
-		try {
-			if(ifile.exists())
-				ifile.setContents(is, false, true, null);
-			else
-				ifile.create(is, false, null);
-		} catch (CoreException e) {
-			e.printStackTrace();
+		if(ifile.exists()) {
+			try(Reader reader = new InputStreamReader(ifile.getContents());){
+				Gson gson = new Gson();
+				PatchNoteData data = gson.fromJson(reader, PatchNoteData.class);
+				return data.getData();
+			} catch (IOException | CoreException e) {
+				e.printStackTrace();
+			}
 		}
 		
-		return cats;
+		return null;
 	}
 	
 	// TODO: Change system.out to log file and patch note generation.
@@ -315,6 +376,7 @@ public class PatchNoteData {
 	 * @param cats The category data to use for sorting.
 	 */
 	public void sortData(CategoryData cats) {
+		System.out.println("Sorting data: " + data);
 		List<JsonElement> list = data.asList();
 		Collections.sort(list, new CategoryComparator(cats));
 		Gson gson = new Gson();
@@ -382,16 +444,39 @@ public class PatchNoteData {
 				String cat2 = getCat(jo2);
 				
 				// If categories are equal, than do lexicographically
-				if(cat1.equals(cat2))
+				if(cat1.equals(cat2)) {
+					// Text is more important.
+					boolean is_jo1_text = jo1.has(IS_TEXT) ? jo1.get(IS_TEXT).getAsBoolean() : false;
+					boolean is_jo2_text = jo2.has(IS_TEXT) ? jo2.get(IS_TEXT).getAsBoolean() : false;
+					
+					if(is_jo1_text && !is_jo2_text)
+						return -1;
+					
+					if(!is_jo1_text && is_jo2_text)
+						return 1;
+					
+					// If both text, developer comments are lower priority than regular text.
+					if(is_jo1_text && is_jo2_text) {
+						boolean is_jo1_devcom = jo1.has(DEVELOPER_COMMENT) ? jo1.get(DEVELOPER_COMMENT).getAsBoolean() : false;
+						boolean is_jo2_devcom = jo2.has(DEVELOPER_COMMENT) ? jo2.get(DEVELOPER_COMMENT).getAsBoolean() : false;
+						
+						if(is_jo1_devcom && !is_jo2_devcom)
+							return 1;
+						
+						if(!is_jo1_devcom && is_jo2_devcom)
+							return -1;
+					}
+					
 					return getName(jo1).compareToIgnoreCase(getName(jo2));
+				}
 				
 				// Cat1 is sub-category of cat2, so it should come later
 				if(cat1.startsWith(cat2))
-					return -1;
+					return 1;
 				
 				// Cat 1 is parent category of cat2, so it should come earlier
 				if(cat2.startsWith(cat1))
-					return 1;
+					return -1;
 				
 				// Objects belong to different categories, so find out where they differ
 				String[] parts1 = cat1.split("\\.");

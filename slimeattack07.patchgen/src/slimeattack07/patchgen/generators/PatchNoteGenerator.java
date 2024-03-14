@@ -11,11 +11,13 @@ public interface PatchNoteGenerator {
 	 */
 	public boolean isValid();
 	
-	/** Add text to file. Caller must determine which file to add to.
+	/** Add content to file. Caller must determine which file to add to.
 	 * 
-	 * @param text Text to add.
+	 * @param content Content to add.
+	 * @param depth Indentation level.
+	 * @param bulleted Whether a bullet point should be generated in from of the content.
 	 */
-	public void addText(String text, int depth, boolean bulleted);
+	public void addContent(String content, int depth, boolean bulleted);
 	
 	/** Add category to file. Caller must determine which file to add to.
 	 * 
@@ -23,4 +25,12 @@ public interface PatchNoteGenerator {
 	 * @param depth Indentation level. 0 = Top level category, 1 = sub-category, 2 = sub-sub-category and so on.
 	 */
 	public void addCategory(String name, int depth);
+	
+	/** Add content to file. Caller must determine which file to add to.
+	 * 
+	 * @param text Text to add.
+	 * @param depth Indentation level.
+	 * @param is_developer_comment Whether this is a developer comment or regular text.
+	 */
+	public void addText(String text, int depth, boolean is_developer_comment);
 }

@@ -12,7 +12,6 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.core.IAnnotation;
@@ -25,10 +24,6 @@ import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
-import org.eclipse.ui.IEditorInput;
-import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.PlatformUI;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
@@ -44,7 +39,7 @@ public class GenerateHandler extends AbstractHandler {
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
 		// Find the active project
-		IProject project = getProject();
+		IProject project = Utils.getProject();
 
 		if (project == null) {
 			System.out.println("Failed to load active project");
@@ -59,32 +54,6 @@ public class GenerateHandler extends AbstractHandler {
 
 		Utils.displayInfo("Generate patch notes", String.format("Generated patch notes for project '%s'", name));
 		return null;
-	}
-
-	/**
-	 * Get the active project.
-	 * 
-	 * @return The active project, or null if none are active.
-	 */
-	@Nullable
-	private IProject getProject() {
-		// Find the active project
-		IWorkbenchPage activePage = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
-		IEditorPart activeEditor = activePage.getActiveEditor();
-		IProject project = null;
-
-		if (activeEditor != null) {
-			IEditorInput input = activeEditor.getEditorInput();
-			project = input.getAdapter(IProject.class);
-			if (project == null) {
-				IResource resource = input.getAdapter(IResource.class);
-				if (resource != null) {
-					project = resource.getProject();
-				}
-			}
-		}
-
-		return project;
 	}
 
 	/**
@@ -290,7 +259,7 @@ public class GenerateHandler extends AbstractHandler {
 			
 			while(!accepted) {
 				System.out.println("DataGen: Specify version:");
-				version = Utils.displayNotBlankInput("Version input", "Specify version name.", "categories");
+				version = Utils.displayNotBlankInput("PatchGen: Version input", "Specify version name.", "categories");
 	
 				IFile ifile = project.getFile(new Path(String.format("src/patchgen/data/%s.json", version)));
 
@@ -298,7 +267,7 @@ public class GenerateHandler extends AbstractHandler {
 					ifile.create(is, false, null);
 					accepted = true;
 				}
-				else if (Utils.displayYesNo("Version Input", 
+				else if (Utils.displayYesNo("PatchGen: Version Input", 
 						String.format("Version '%s' already exists. Would you like to overwrite it?", version))){
 					ifile.setContents(is, false, true, null);
 					accepted = true;

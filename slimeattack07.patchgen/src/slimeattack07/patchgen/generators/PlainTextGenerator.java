@@ -25,8 +25,8 @@ public class PlainTextGenerator extends AbstractPatchNoteGenerator implements Pa
 	}
 	
 	@Override
-	public void addText(String text, int depth, boolean bulleted) {
-		String real_text = bulleted ? "* " + text : text;
+	public void addContent(String content, int depth, boolean bulleted) {
+		String real_text = bulleted ? "* " + content : content;
 		String indented = indent(real_text, depth);
 		addToFile(IFILE, indented + System.lineSeparator());
 	}
@@ -38,7 +38,7 @@ public class PlainTextGenerator extends AbstractPatchNoteGenerator implements Pa
 
 	@Override
 	public void addCategory(String name, int depth) {
-		addText("--[[" + name.toUpperCase() + "]]--", depth, false); // TODO: Temporarily using upper case for testing.
+		addContent("--[[" + name.toUpperCase() + "]]--", depth, false); // TODO: Temporarily using upper case for testing.
 	}
 	
 	/** Indent given text.
@@ -54,5 +54,13 @@ public class PlainTextGenerator extends AbstractPatchNoteGenerator implements Pa
 			indented += "\t";
 		
 		return indented + text;
+	}
+
+	@Override
+	public void addText(String text, int depth, boolean is_developer_comment) {
+		if(is_developer_comment)
+			addContent("-{Developer Comments}- " + text, depth, false);
+		else
+			addContent(text, depth, false);
 	}
 }
