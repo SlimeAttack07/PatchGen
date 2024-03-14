@@ -58,6 +58,14 @@ public class GenCodeHandler extends AbstractHandler {
 				ifile.setContents(is, false, true, null);
 			else 
 				ifile.create(is, false, null);
+			
+			ifile = Utils.requestFile(project, "annotations", "CategoryInfo", "java");
+			is = new ByteArrayInputStream(CategoryInfo.getCode().getBytes());
+
+			if (ifile.exists()) 
+				ifile.setContents(is, false, true, null);
+			else 
+				ifile.create(is, false, null);
 		} catch (CoreException | NullPointerException e) {
 			e.printStackTrace();
 		}

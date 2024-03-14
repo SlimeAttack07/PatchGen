@@ -111,8 +111,10 @@ public class GenerateHandler extends AbstractHandler {
 				if (frag.getKind() == IPackageFragmentRoot.K_SOURCE) {
 					for (ICompilationUnit unit : frag.getCompilationUnits()) {
 						System.out.println(String.format("File: %s", unit.getElementName()));
+						
 						for (IType type : unit.getAllTypes()) {
-							JsonArray partial = processFields(type);
+							String category = getClassCategory(type);
+							JsonArray partial = processFields(type, category);
 
 							if (!partial.isEmpty())
 								data.addAll(partial);
@@ -134,19 +136,51 @@ public class GenerateHandler extends AbstractHandler {
 			e.printStackTrace();
 		}
 	}
+	
+	/** Get the Category id for a class.
+	 * 
+	 * @param type The class.
+	 * @return The category id, or the empty String if not present.
+	 */
+	private String getClassCategory(IType type) {
+		try {
+			for(IAnnotation ann : type.getAnnotations()) {
+				if(ann.getElementName().equals("CategoryInfo")) {
+					for (IMemberValuePair pair : ann.getMemberValuePairs()) {
+						System.out.println(String.format("      Pair %s %s", pair.getMemberName(), pair.getValue()));
+						
+						switch(pair.getMemberName()) {
+						case PatchNoteData.ID: return pair.getValue().toString();
+						default: break;
+						}
+					}
+				}
+			}
+		} catch (JavaModelException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return "";
+	}
 
 	/**
-	 * Process fields in a class.
+	 * Process final fields in a class.
 	 * 
 	 * @param type The class to process.
+	 * @param category The category id to overwrite the field's category with. Will not overwrite if the empty String is provided.
+	 * @return A JsonArray holding the data for all fields.
 	 */
-	private JsonArray processFields(IType type) {
+	private JsonArray processFields(IType type, String category) {
 		JsonArray data = new JsonArray();
 
 		try {
 			for (IField field : type.getFields()) {
+				if(field.getConstant() == null)
+					continue;
+				
 				System.out.println(String.format("Field info: %s = %s", field.getElementName(), field.getConstant()));
-				JsonObject partial = processAnnotations(field);
+				JsonObject partial = processAnnotations(field, category);
 
 				if (partial != null && !partial.isEmpty())
 					data.add(partial);
@@ -162,9 +196,11 @@ public class GenerateHandler extends AbstractHandler {
 	 * Process annotations on a field.
 	 * 
 	 * @param field The field to process.
+	 * @param category The category id to overwrite the field's category with. Will not overwrite if the empty String is provided.
+	 * @return A JsonObject holding the data related to the field.
 	 */
 	@Nullable
-	private JsonObject processAnnotations(IField field) {
+	private JsonObject processAnnotations(IField field, String category) {
 		try {
 			for (IAnnotation ann : field.getAnnotations()) {
 				if (ann.getElementName().equals("Watchable")) { // TODO: Make these constants
@@ -189,8 +225,11 @@ public class GenerateHandler extends AbstractHandler {
 							outer.addProperty(PatchNoteData.ID, pair.getValue().toString());
 							break;
 						case PatchNoteData.CATEGORY:
-							outer.addProperty(PatchNoteData.CATEGORY, pair.getValue().toString());
+							if(category.isBlank())
+								outer.addProperty(PatchNoteData.CATEGORY, pair.getValue().toString());
+							
 							break;
+							
 						case PatchNoteData.NAME:
 							outer.addProperty(PatchNoteData.NAME, pair.getValue().toString());
 							break;
@@ -203,7 +242,10 @@ public class GenerateHandler extends AbstractHandler {
 							break;
 						}
 					}
-
+					
+					if(!category.isBlank())
+						outer.addProperty(PatchNoteData.CATEGORY, category);
+						
 					System.out.println("Generated following JSON:");
 					System.out.println(outer);
 					return outer;
