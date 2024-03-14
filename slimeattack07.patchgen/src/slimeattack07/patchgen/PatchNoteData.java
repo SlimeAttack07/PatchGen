@@ -33,6 +33,7 @@ public class PatchNoteData {
 	public static final String CATEGORY = "category";
 	public static final String DATA = "data";
 	public static final String META = "meta";
+	public static final String BULLETED = "bulleted";
 	
 	/** Constructor.
 	 * 
@@ -68,7 +69,13 @@ public class PatchNoteData {
 		// Sort per category to make generation easier.
 		sortData(cats);
 		
-		PatchNoteGenerator gen = new PlainTextGenerator(project, old_version, new_version);
+		PatchNoteGenerator gen = new PlainTextGenerator(project, String.format("%s_to_%s", old_version, new_version));
+		
+		if(!gen.isValid()) {
+			System.out.println("Unable to generate patch notes.");
+			Utils.displayError("PatchGen: Generate patch notes", "Unable to generate patch notes.");
+		}
+		
 		String last_category = "";
 		int last_depth = 0;
 		
@@ -101,7 +108,9 @@ public class PatchNoteData {
 								}
 							}
 							
-							gen.addText(text, last_depth);
+							boolean bulleted = entry.has(PatchNoteData.BULLETED) ? 
+									entry.get(PatchNoteData.BULLETED).getAsBoolean() : true;
+							gen.addText(text, last_depth, bulleted);
 						}
 					}
 				}

@@ -1,5 +1,6 @@
 package slimeattack07.patchgen;
 
+import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -20,12 +21,46 @@ import org.eclipse.ui.PlatformUI;
  */
 public class Utils {
 
+	/** Request a unique file to dump data in. If file already exists, user will be asked if it can be overwritten.
+	 * 
+	 * @param project Project to generate file for.
+	 * @param dir The patchgen subdirectory to put the file in.
+	 * @param name The name of the file.
+	 * @param extension The extension of the file.
+	 * @return The file to dump data in, or null if an error occurred or user refuses to overwrite.
+	 */
+	@Nullable
+	public static IFile requestUniqueFile(IProject project, String dir, String name, String extension) {
+		IFile ifile = requestFile(project, dir, name, extension);
+		
+		if(ifile.exists()) {
+			boolean overwrite = Utils.displayYesNo("PatchGen: File Request", 
+					String.format("File 'patchgen/%s/%s.%s' already exists. Would you like to overwrite it?", dir, name, extension));
+			
+			// Clear contents if overwrite is allowed.
+			if(overwrite) {
+				try {
+					ifile.setContents(new ByteArrayInputStream("".getBytes()), false, true, null);
+				} catch (CoreException e) {
+					e.printStackTrace();
+				}
+				
+				return ifile;
+			}
+			
+			return null;
+		}
+		
+		return ifile;
+	}
+	
 	/** Request a file to dump data in.
 	 * 
 	 * @param project Project to generate file for.
 	 * @param dir The patchgen subdirectory to put the file in.
 	 * @param name The name of the file.
 	 * @param extension The extension of the file.
+	 * @return The file to dump data in, or null if an error occurred
 	 */
 	@Nullable
 	public static IFile requestFile(IProject project, String dir, String name, String extension) {
@@ -54,6 +89,36 @@ public class Utils {
 		return null;
 	}
 	
+	/** Display error to user.
+	 * 
+	 * @param title Title of the display window.
+	 * @param message The message in the display window.
+	 */
+	public static void displayError(String title, String message) {
+		try {
+		Shell shell = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
+		MessageDialog.openError(shell, title, message);
+		} catch(IllegalStateException | NullPointerException e) {
+			System.out.println("Encountered error displaying info:");
+			e.printStackTrace();
+		}
+	}
+	
+	/** Display warning to user.
+	 * 
+	 * @param title Title of the display window.
+	 * @param message The message in the display window.
+	 */
+	public static void displayWarning(String title, String message) {
+		try {
+		Shell shell = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
+		MessageDialog.openWarning(shell, title, message);
+		} catch(IllegalStateException | NullPointerException e) {
+			System.out.println("Encountered error displaying info:");
+			e.printStackTrace();
+		}
+	}
+	
 	/** Display information to user.
 	 * 
 	 * @param title Title of the display window.
@@ -67,6 +132,23 @@ public class Utils {
 			System.out.println("Encountered error displaying info:");
 			e.printStackTrace();
 		}
+	}
+	
+	/** Display yes/no question to user.
+	 * 
+	 * @param title Title of the display window.
+	 * @param message The message in the display window.
+	 */
+	public static boolean displayYesNo(String title, String message) {
+		try {
+		Shell shell = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
+		return MessageDialog.openQuestion(shell, title, message);
+		} catch(IllegalStateException | NullPointerException e) {
+			System.out.println("Encountered error displaying info:");
+			e.printStackTrace();
+		}
+		
+		return false;
 	}
 	
 	/** Display a window requesting user for a positive integer. If the user presses 'Cancel', then -1 is returned.

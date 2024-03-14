@@ -24,6 +24,7 @@ public @interface Watchable {
 	public String id();
 	public String name() default "";
 	public String category() default "";
+	public boolean bulleted() default true;
 }				
 		""";
 	}

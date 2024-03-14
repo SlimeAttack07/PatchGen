@@ -7,11 +7,9 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorInput;
@@ -32,7 +30,7 @@ public class GenCodeHandler extends AbstractHandler {
 
 		if (project == null) {
 			System.out.println("Failed to load active project");
-			MessageDialog.openInformation(shell, "Code generator", "Failed to load active project.");
+			MessageDialog.openError(shell, "Code generator", "Failed to load active project.");
 			return null;
 		}
 
@@ -52,28 +50,15 @@ public class GenCodeHandler extends AbstractHandler {
 	 */
 	private void createFiles(IProject project) {
 		try {
-			// TODO: Make folder/file gen run on plugin load?
-			// Check if patchgen folder exists, create if it doesn't exist.
-			IFolder folder_patchgen = project.getFolder(new Path("src/patchgen"));
-
-			if (!folder_patchgen.exists())
-				folder_patchgen.create(false, false, null);
-
-			IFolder folder_annotations = project.getFolder(new Path("src/patchgen/annotations"));
-
-			// Check if patchgen/annotations folder exists, create if it doesn't exist.
-			if (!folder_annotations.exists())
-				folder_annotations.create(false, false, null);
-
-			// Check if Watchable.java exists, create if it doesn't exist.
 			// TODO: Add version check If I decide to ever update this plugin.
-			IFile ifile = project.getFile(new Path("src/patchgen/annotations/Watchable.java"));
+			IFile ifile = Utils.requestFile(project, "annotations", "Watchable", "java");
+			InputStream is = new ByteArrayInputStream(Watchable.getCode().getBytes());
 
-			if (!ifile.exists()) {
-				InputStream is = new ByteArrayInputStream(Watchable.getCode().getBytes());
+			if (ifile.exists()) 
+				ifile.setContents(is, false, true, null);
+			else 
 				ifile.create(is, false, null);
-			}
-		} catch (CoreException e) {
+		} catch (CoreException | NullPointerException e) {
 			e.printStackTrace();
 		}
 	}
@@ -84,20 +69,26 @@ public class GenCodeHandler extends AbstractHandler {
 	 */
 	@Nullable
 	private IProject getProject() {
-		// Find the active project
-		IWorkbenchPage activePage = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
-		IEditorPart activeEditor = activePage.getActiveEditor();
 		IProject project = null;
-
-		if (activeEditor != null) {
-			IEditorInput input = activeEditor.getEditorInput();
-			project = input.getAdapter(IProject.class);
-			if (project == null) {
-				IResource resource = input.getAdapter(IResource.class);
-				if (resource != null) {
-					project = resource.getProject();
+		
+		try { // Multiple methods used here can return null, so this saves us from having to check all of them.
+			// Find the active project
+			IWorkbenchPage activePage = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+			IEditorPart activeEditor = activePage.getActiveEditor();
+			
+	
+			if (activeEditor != null) {
+				IEditorInput input = activeEditor.getEditorInput();
+				project = input.getAdapter(IProject.class);
+				if (project == null) {
+					IResource resource = input.getAdapter(IResource.class);
+					if (resource != null) {
+						project = resource.getProject();
+					}
 				}
 			}
+		} catch (NullPointerException e) {
+			return null;
 		}
 
 		return project;

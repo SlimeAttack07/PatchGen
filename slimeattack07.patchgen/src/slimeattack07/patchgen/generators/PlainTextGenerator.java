@@ -17,17 +17,17 @@ public class PlainTextGenerator extends AbstractPatchNoteGenerator implements Pa
 	 * 
 	 * @param project The project to generate patch notes for.
 	 */
-	public PlainTextGenerator(IProject project, String old_version, String new_version) {
+	public PlainTextGenerator(IProject project, String version) {
 		this.PROJECT = project;
-		String version = String.format("%s_to_%s", old_version, new_version);
-		this.IFILE = Utils.requestFile(PROJECT, "patchnotes", version, ".txt");
+		this.IFILE = Utils.requestUniqueFile(PROJECT, "patchnotes", version, ".txt");
 		
 		IS_VALID = this.IFILE != null;
 	}
 	
 	@Override
-	public void addText(String text, int depth) {
-		String indented = indent(text, depth);
+	public void addText(String text, int depth, boolean bulleted) {
+		String real_text = bulleted ? "* " + text : text;
+		String indented = indent(real_text, depth);
 		addToFile(IFILE, indented + System.lineSeparator());
 	}
 
@@ -38,7 +38,7 @@ public class PlainTextGenerator extends AbstractPatchNoteGenerator implements Pa
 
 	@Override
 	public void addCategory(String name, int depth) {
-		addText("--[[" + name.toUpperCase() + "]]--", depth); // TODO: Temporarily using upper case for testing.
+		addText("--[[" + name.toUpperCase() + "]]--", depth, false); // TODO: Temporarily using upper case for testing.
 	}
 	
 	/** Indent given text.

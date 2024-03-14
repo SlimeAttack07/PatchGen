@@ -15,7 +15,7 @@ public interface PatchNoteGenerator {
 	 * 
 	 * @param text Text to add.
 	 */
-	public void addText(String text, int depth);
+	public void addText(String text, int depth, boolean bulleted);
 	
 	/** Add category to file. Caller must determine which file to add to.
 	 * 

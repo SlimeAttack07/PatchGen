@@ -48,7 +48,7 @@ public class GenerateHandler extends AbstractHandler {
 
 		if (project == null) {
 			System.out.println("Failed to load active project");
-			Utils.displayInfo("Generate patch notes", "Failed to load active project.");
+			Utils.displayError("Generate patch notes", "Failed to load active project.");
 			return null;
 		}
 
@@ -98,7 +98,7 @@ public class GenerateHandler extends AbstractHandler {
 
 		if (javaproject == null) {
 			System.out.println("Not a Java project!");
-			Utils.displayInfo("Generate patch notes", String
+			Utils.displayError("Generate patch notes", String
 					.format("Failed to generate patch notes: Project '%s' is not a Java project!", project.getName()));
 			return;
 		}
@@ -124,10 +124,10 @@ public class GenerateHandler extends AbstractHandler {
 			if (!data.isEmpty()) {
 				JsonObject data_object = new JsonObject();
 				data_object.add(PatchNoteData.DATA, data);
-				createFiles(project, data_object, true);
+				createFiles(project, data_object);
 			} else {
 				System.out.println("Nothing changed!");
-				Utils.displayInfo("Generate patch notes", "Failed to detect any changes.");
+				Utils.displayWarning("Generate patch notes", "Failed to detect any changes.");
 			}
 
 		} catch (JavaModelException e) {
@@ -180,7 +180,7 @@ public class GenerateHandler extends AbstractHandler {
 					else
 						outer.addProperty(PatchNoteData.VALUE, value.toString());
 
-					// Store meta info like category and name (if provided).
+					// Store info like category and name (if provided).
 					for (IMemberValuePair pair : ann.getMemberValuePairs()) {
 						System.out.println(String.format("      Pair %s %s", pair.getMemberName(), pair.getValue()));
 
@@ -193,6 +193,9 @@ public class GenerateHandler extends AbstractHandler {
 							break;
 						case PatchNoteData.NAME:
 							outer.addProperty(PatchNoteData.NAME, pair.getValue().toString());
+							break;
+						case PatchNoteData.BULLETED:
+							outer.addProperty(PatchNoteData.BULLETED, (boolean) pair.getValue());
 							break;
 						default:
 							System.out.println(String.format("Unknown memberpair: %s = %s", pair.getMemberName(),
@@ -220,7 +223,7 @@ public class GenerateHandler extends AbstractHandler {
 	 * @param result    The resulted text to put in the file.
 	 * @param overwrite Whether an existing file should be overwritten.
 	 */
-	private void createFiles(IProject project, JsonObject result, boolean overwrite) {
+	private void createFiles(IProject project, JsonObject result) {
 		try {
 			// TODO: Make folder/file gen run on plugin load?
 			// Check if patchgen folder exists, create if it doesn't exist.
@@ -236,20 +239,28 @@ public class GenerateHandler extends AbstractHandler {
 				folder_data.create(false, false, null);
 
 			// Check if data.json exists, create if it doesn't exist.
-			// TODO: Add version check.
-			System.out.println("DataGen: Specify version:");
-			String version = Utils.displayNotBlankInput("Version input", "Specify version name.", "categories");
+			
+			boolean accepted = false;
+			String version = "";
+			// TODO: May need pretty printer. Probably rewrite writer to not do a toString()
+			// cuz of string max length
+			InputStream is = new ByteArrayInputStream(result.toString().getBytes());
+			
+			while(!accepted) {
+				System.out.println("DataGen: Specify version:");
+				version = Utils.displayNotBlankInput("Version input", "Specify version name.", "categories");
+	
+				IFile ifile = project.getFile(new Path(String.format("src/patchgen/data/%s.json", version)));
 
-			IFile ifile = project.getFile(new Path(String.format("src/patchgen/data/%s.json", version)));
-
-			if (overwrite) { // TODO: May need pretty printer. Probably rewrite writer to not do a toString()
-								// cuz of string max length
-				InputStream is = new ByteArrayInputStream(result.toString().getBytes());
-
-				if (!ifile.exists())
+				if (!ifile.exists()) {
 					ifile.create(is, false, null);
-				else
+					accepted = true;
+				}
+				else if (Utils.displayYesNo("Version Input", 
+						String.format("Version '%s' already exists. Would you like to overwrite it?", version))){
 					ifile.setContents(is, false, true, null);
+					accepted = true;
+				}
 			}
 
 			compareToVersion(project, version);
@@ -267,25 +278,38 @@ public class GenerateHandler extends AbstractHandler {
 	 */
 	private void compareToVersion(IProject project, String new_version) {
 		// TODO: Add version check. Temporarily using System.in for testing.
-		System.out.println("Comparison: Specify version to compare to:");
-		String old_version = Utils.displayNotBlankInput("Version input", "Specify version to compare to.", "categories");
+		boolean accepted = false;
+		IFile ifile_new = null;
+		IFile ifile_old = null;
+		String old_version = "";
+		
+		while(!accepted) {
+			System.out.println("Comparison: Specify version to compare to:");
+			old_version = Utils.displayNotBlankInput("Version input", "Specify version to compare to. Enter 'cancel' to cancel.", "categories");
 
-		// TODO: Add way to determine if other versions even exist to compare to.
-		if (old_version.equals("no") || old_version.equals("categories"))
-			return;
+			// TODO: Add way to determine if other versions even exist to compare to.
+			if (old_version.toLowerCase().equals("cancel")) {
+				Utils.displayInfo("PatchGen: Comparison", "User canceled generation of release notes.");
+				return;
+			}
 
-		IFile ifile_new = Utils.requestFile(project, "data", new_version, "json");
-		IFile ifile_old = Utils.requestFile(project, "data", old_version, "json");
+			ifile_new = Utils.requestFile(project, "data", new_version, "json");
+			ifile_old = Utils.requestFile(project, "data", old_version, "json");
 
-		if (!ifile_new.exists()) {
-			System.out.println(String.format("File src/patchgen/data/%s.json does not exist", new_version));
-			return;
+			if (ifile_new == null || !ifile_new.exists()) {
+				System.out.println(String.format("File src/patchgen/data/%s.json does not exist", new_version));
+				Utils.displayError("PatchGen: Comparison", String.format("File src/patchgen/data/%s.json does not exist", new_version));
+				return;
+			}
+
+			if (ifile_old == null || !ifile_old.exists()) {
+				System.out.println(String.format("File src/patchgen/data/%s.json does not exist", old_version));
+				Utils.displayWarning("PatchGen: Comparison", String.format("File src/patchgen/data/%s.json does not exist", old_version));
+			}
+			else
+				accepted =  true;
 		}
-
-		if (!ifile_old.exists()) {
-			System.out.println(String.format("File src/patchgen/data/%s.json does not exist", old_version));
-			return;
-		}
+		
 
 		try ( // Auto-closes resources
 				Reader reader_new = new InputStreamReader(ifile_new.getContents());
