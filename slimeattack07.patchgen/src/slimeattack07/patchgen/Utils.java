@@ -214,7 +214,8 @@ public class Utils {
 	/** Display a window requesting user for non-empty input. If the user presses 'Cancel', then "NOTHING" is returned.
 	 * 
 	 * @param title The title of the display window.
-	 * @param message The message in the display window.,\
+	 * @param message The message in the display window.
+	 * @param banned The Strings that are not allowed as input.
 	 * @return The input text, or "NOTHING" if user pressed 'Cancel'.
 	 */
 	public static String displayNotBlankInput(String title, String message, String... banned) {
@@ -224,6 +225,33 @@ public class Utils {
 			Shell shell = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
 			InputDialog input_dialog = new InputDialog(shell, title, message, "", 
 					new NotBlankValidator(new ArrayList<>(Arrays.asList(banned))));
+			input_dialog.setBlockOnOpen(true); // Can't proceed without user input.
+			int status = input_dialog.open();
+			
+			if(status == Window.OK)
+				input_value = input_dialog.getValue();
+		
+		} catch(IllegalStateException | NullPointerException e) {
+			System.out.println("Encountered error displaying input:");
+			e.printStackTrace();
+		}
+		
+		return input_value;
+	}
+	
+	/** Display a window requesting user for output format. If the user presses 'Cancel', then "NOTHING" is returned.
+	 * 
+	 * @param title The title of the display window.
+	 * @param message The message in the display window.,\
+	 * @return The input text, or "NOTHING" if user pressed 'Cancel'.
+	 */
+	public static String displayOutputVersionInput(String title, String message) {
+		String input_value = "NOTHING"; // Cancel will default to -1.
+		
+		try {
+			Shell shell = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
+			InputDialog input_dialog = new InputDialog(shell, title, message, "", 
+					new OutputTypeValidator());
 			input_dialog.setBlockOnOpen(true); // Can't proceed without user input.
 			int status = input_dialog.open();
 			
@@ -264,7 +292,6 @@ public class Utils {
 
 			return "Must be a positive integer.";
 		}
-		
 	}
 	
 	/** Validator for non-blank input.
@@ -283,6 +310,17 @@ public class Utils {
 			return newText.isBlank() ? "Can't be blank" : 
 				illegal.contains(newText) ? String.format("'%s' is not permitted", newText) : null;
 		}
-		
+	}
+	
+	/** Validator for supported output types.
+	 * 
+	 */
+	private static class OutputTypeValidator implements IInputValidator{
+		private static final ArrayList<String> SUPPORTED = new ArrayList<>(Arrays.asList("txt", "md"));		
+		@Override
+		public String isValid(String newText) {
+			return newText.isBlank() ? "Can't be blank" : 
+				SUPPORTED.contains(newText) ? null : String.format("'%s' is not supported", newText);
+		}
 	}
 }

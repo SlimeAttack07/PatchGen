@@ -20,8 +20,7 @@ public class PlainTextGenerator extends AbstractPatchNoteGenerator implements Pa
 	public PlainTextGenerator(IProject project, String version) {
 		this.PROJECT = project;
 		this.IFILE = Utils.requestUniqueFile(PROJECT, "patchnotes", version, ".txt");
-		
-		IS_VALID = this.IFILE != null;
+		this.IS_VALID = this.IFILE != null;
 	}
 	
 	@Override
@@ -40,6 +39,14 @@ public class PlainTextGenerator extends AbstractPatchNoteGenerator implements Pa
 	public void addCategory(String name, int depth) {
 		addContent("--[[" + name.toUpperCase() + "]]--", depth, false); // TODO: Temporarily using upper case for testing.
 	}
+
+	@Override
+	public void addText(String text, int depth, boolean is_developer_comment) {
+		if(is_developer_comment)
+			addContent("-{Developer Comments}- " + text, depth, false);
+		else
+			addContent(text, depth, false);
+	}
 	
 	/** Indent given text.
 	 * 
@@ -54,13 +61,5 @@ public class PlainTextGenerator extends AbstractPatchNoteGenerator implements Pa
 			indented += "\t";
 		
 		return indented + text;
-	}
-
-	@Override
-	public void addText(String text, int depth, boolean is_developer_comment) {
-		if(is_developer_comment)
-			addContent("-{Developer Comments}- " + text, depth, false);
-		else
-			addContent(text, depth, false);
 	}
 }

@@ -16,7 +16,7 @@ public abstract class AbstractPatchNoteGenerator {
 	 * @param ifile File to add content to.
 	 * @param content Content to add.
 	 */
-	public void addToFile(IFile ifile, String content) {
+	protected void addToFile(IFile ifile, String content) {
 		InputStream is = toInputStream(content);
 		try {
 			if(ifile.exists()) {
@@ -34,7 +34,7 @@ public abstract class AbstractPatchNoteGenerator {
 	 * @param input The String to transform.
 	 * @return The String as InputStream.
 	 */
-	public InputStream toInputStream(String input) {
+	protected InputStream toInputStream(String input) {
 		return new ByteArrayInputStream(input.getBytes());
 	}
 }

@@ -18,6 +18,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
+import slimeattack07.patchgen.generators.MarkdownGenerator;
 import slimeattack07.patchgen.generators.PatchNoteGenerator;
 import slimeattack07.patchgen.generators.PlainTextGenerator;
 
@@ -53,6 +54,22 @@ public class PatchNoteData {
 		return data;
 	}
 	
+	/** Ask the user what output generator should be used.
+	 * 
+	 * @param project The project to generate release notes for.
+	 * @param name The name that will be given to the created file.
+	 * @return
+	 */
+	@Nullable
+	private PatchNoteGenerator askGenerator(IProject project, String name) {
+		String format = Utils.displayOutputVersionInput("PatchGen: Specify output format", "What should the output format be? Supported are 'txt' and 'md'.");
+		switch(format) {
+		case "txt": return new PlainTextGenerator(project, name);
+		case "md": return new MarkdownGenerator(project, name);
+		default: return null;
+		}
+	}
+	
 	// TODO: Strategy would be as follow: Sort on (nested) categories first. If category priority unknown, ask user.
 	// Save category info in file somewhere. Make method later for changing these afterwards.
 	/** Generate patch notes. The instance this method is called for will serve as the newest data.
@@ -78,7 +95,7 @@ public class PatchNoteData {
 		sortData(cats);
 		System.out.println("Data is now: " + data.toString());
 		
-		PatchNoteGenerator gen = new PlainTextGenerator(project, String.format("%s_to_%s", old_version, new_version));
+		PatchNoteGenerator gen = askGenerator(project, String.format("%s_to_%s", old_version, new_version));
 		
 		if(!gen.isValid()) {
 			System.out.println("Unable to generate patch notes.");
