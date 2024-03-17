@@ -16,7 +16,7 @@ public class MarkdownGenerator extends AbstractPatchNoteGenerator implements Pat
 	 */
 	public MarkdownGenerator(IProject project, String version) {
 		this.PROJECT = project;
-		this.IFILE = Utils.requestUniqueFile(PROJECT, "patchnotes", version, ".md");
+		this.IFILE = Utils.requestUniqueFile(PROJECT, "patchnotes", version, "md");
 		this.IS_VALID = this.IFILE != null;
 	}
 	
@@ -55,4 +55,12 @@ public class MarkdownGenerator extends AbstractPatchNoteGenerator implements Pat
 		else
 			addContent(text, depth, false);
 	}
+
+	@Override
+	public String indent(String text, int depth) {
+		return text; // Markdown doesn't like indentation, so just return the text without indenting.
+	}
+
+	@Override
+	public void finish() {}
 }

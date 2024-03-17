@@ -19,7 +19,7 @@ public class PlainTextGenerator extends AbstractPatchNoteGenerator implements Pa
 	 */
 	public PlainTextGenerator(IProject project, String version) {
 		this.PROJECT = project;
-		this.IFILE = Utils.requestUniqueFile(PROJECT, "patchnotes", version, ".txt");
+		this.IFILE = Utils.requestUniqueFile(PROJECT, "patchnotes", version, "txt");
 		this.IS_VALID = this.IFILE != null;
 	}
 	
@@ -48,13 +48,8 @@ public class PlainTextGenerator extends AbstractPatchNoteGenerator implements Pa
 			addContent(text, depth, false);
 	}
 	
-	/** Indent given text.
-	 * 
-	 * @param text The text to indent.
-	 * @param depth The amount of tabs to indent with.
-	 * @return The indented text.
-	 */
-	private String indent(String text, int depth) {
+	@Override
+	public String indent(String text, int depth) {
 		String indented = "";
 		
 		for(int i = 0; i < depth; i++)
@@ -62,4 +57,7 @@ public class PlainTextGenerator extends AbstractPatchNoteGenerator implements Pa
 		
 		return indented + text;
 	}
+
+	@Override
+	public void finish() {}
 }

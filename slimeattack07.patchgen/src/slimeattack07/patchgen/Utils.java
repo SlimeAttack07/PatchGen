@@ -219,7 +219,7 @@ public class Utils {
 	 * @return The input text, or "NOTHING" if user pressed 'Cancel'.
 	 */
 	public static String displayNotBlankInput(String title, String message, String... banned) {
-		String input_value = "NOTHING"; // Cancel will default to -1.
+		String input_value = "NOTHING"; // Cancel will default to "NOTHING".
 		
 		try {
 			Shell shell = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
@@ -246,7 +246,7 @@ public class Utils {
 	 * @return The input text, or "NOTHING" if user pressed 'Cancel'.
 	 */
 	public static String displayOutputVersionInput(String title, String message) {
-		String input_value = "NOTHING"; // Cancel will default to -1.
+		String input_value = "NOTHING"; // Cancel will default to NOTHING"".
 		
 		try {
 			Shell shell = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
@@ -316,7 +316,7 @@ public class Utils {
 	 * 
 	 */
 	private static class OutputTypeValidator implements IInputValidator{
-		private static final ArrayList<String> SUPPORTED = new ArrayList<>(Arrays.asList("txt", "md"));		
+		private static final ArrayList<String> SUPPORTED = new ArrayList<>(Arrays.asList("txt", "md", "html"));		
 		@Override
 		public String isValid(String newText) {
 			return newText.isBlank() ? "Can't be blank" : 

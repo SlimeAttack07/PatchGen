@@ -18,6 +18,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
+import slimeattack07.patchgen.generators.HtmlGenerator;
 import slimeattack07.patchgen.generators.MarkdownGenerator;
 import slimeattack07.patchgen.generators.PatchNoteGenerator;
 import slimeattack07.patchgen.generators.PlainTextGenerator;
@@ -62,10 +63,11 @@ public class PatchNoteData {
 	 */
 	@Nullable
 	private PatchNoteGenerator askGenerator(IProject project, String name) {
-		String format = Utils.displayOutputVersionInput("PatchGen: Specify output format", "What should the output format be? Supported are 'txt' and 'md'.");
+		String format = Utils.displayOutputVersionInput("PatchGen: Specify output format", "What should the output format be? Supported are 'txt', 'md' and 'html'.");
 		switch(format) {
 		case "txt": return new PlainTextGenerator(project, name);
 		case "md": return new MarkdownGenerator(project, name);
+		case "html": return new HtmlGenerator(project, name);
 		default: return null;
 		}
 	}
@@ -100,6 +102,7 @@ public class PatchNoteData {
 		if(!gen.isValid()) {
 			System.out.println("Unable to generate patch notes.");
 			Utils.displayError("PatchGen: Generate patch notes", "Unable to generate patch notes.");
+			return;
 		}
 		
 		String last_category = "";
@@ -156,6 +159,8 @@ public class PatchNoteData {
 				}
 			}
 		}
+		
+		gen.finish();
 	}
 	
 	/** Generating categories in the patch notes.

@@ -260,6 +260,11 @@ public class GenerateHandler extends AbstractHandler {
 			while(!accepted) {
 				System.out.println("DataGen: Specify version:");
 				version = Utils.displayNotBlankInput("PatchGen: Version input", "Specify version name.", "categories");
+				
+				if(version.equals("NOTHING")) {
+					Utils.displayWarning("PatchGen: Version input", "User canceled generation of patch notes.");
+					return;
+				}
 	
 				IFile ifile = project.getFile(new Path(String.format("src/patchgen/data/%s.json", version)));
 

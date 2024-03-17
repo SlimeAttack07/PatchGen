@@ -33,4 +33,18 @@ public interface PatchNoteGenerator {
 	 * @param is_developer_comment Whether this is a developer comment or regular text.
 	 */
 	public void addText(String text, int depth, boolean is_developer_comment);
+	
+	/** Indent given text.
+	 * 
+	 * @param text The text to indent.
+	 * @param depth The amount of tabs to indent with.
+	 * @return The indented text.
+	 */
+	public String indent(String text, int depth);
+	
+	/** Allow the generator to generate anything else needed after the last content was added.
+	 * Primarily needed for output formats like HTML, which need the right closing tags to be generated.
+	 * 
+	 */
+	public void finish();
 }

@@ -62,6 +62,14 @@ public class GenCodeHandler extends AbstractHandler {
 				ifile.setContents(is, false, true, null);
 			else 
 				ifile.create(is, false, null);
+			
+			ifile = Utils.requestFile(project, "patchnotes", "basic", "css");
+			is = new ByteArrayInputStream(BasicStyle.getStyle().getBytes());
+
+			if (ifile.exists()) 
+				ifile.setContents(is, false, true, null);
+			else 
+				ifile.create(is, false, null);
 		} catch (CoreException | NullPointerException e) {
 			e.printStackTrace();
 		}
