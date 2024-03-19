@@ -161,6 +161,18 @@ public class PatchNoteData {
 		}
 		
 		gen.finish();
+		
+		if(Utils.displayYesNo("PatchGen: Reset text file", "Would you like to clear the text.json file to start fresh for the next patch? You can always use the 'ResetText' button to do this at any time yourself.")) {
+			IFile ifile = Utils.requestFile(project, "data", "text", ".json");
+			
+			if(ifile.exists())
+				try {
+					ifile.setContents(new ByteArrayInputStream("".getBytes()), false, true, null);
+				} catch (CoreException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+		}		
 	}
 	
 	/** Generating categories in the patch notes.
