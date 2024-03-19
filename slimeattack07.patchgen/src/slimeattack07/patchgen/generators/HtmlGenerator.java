@@ -12,6 +12,7 @@ public class HtmlGenerator extends AbstractPatchNoteGenerator implements PatchNo
 	private String author = "UNKNOWN";
 	private boolean include_base = false;
 	private boolean in_list = false;
+	private int cat_depth = 0;
 	
 	/** Constructor.
 	 * 
@@ -61,12 +62,12 @@ public class HtmlGenerator extends AbstractPatchNoteGenerator implements PatchNo
 	@Override
 	public void addContent(String content, int depth, boolean bulleted) {
 		if(bulleted && !in_list) {
-			addToFile(IFILE, indent("<ul>" + System.lineSeparator(), depth));
+			addToFile(IFILE, indent("<div class=\"list\"><ul>" + System.lineSeparator(), depth));
 			in_list = true;
 		}
 		
 		if(!bulleted && in_list) {
-			addToFile(IFILE, indent("</ul>" + System.lineSeparator(), depth));
+			addToFile(IFILE, indent("</ul></div>" + System.lineSeparator(), depth));
 			in_list = false;
 		}
 		
@@ -79,15 +80,24 @@ public class HtmlGenerator extends AbstractPatchNoteGenerator implements PatchNo
 	@Override
 	public void addCategory(String name, int depth) {
 		int real_depth = depth + 3;
+		
+		while(cat_depth > depth) {
+			addContent("</div>", real_depth, false);
+			cat_depth--;
+		}
+		
 		// HTML supports up to 6 heading levels, so anything above level 5 is defaulted to max level 6.
 		switch(depth) {
-		case 0: addContent("<h1>" + name + "</h1>", real_depth, false); break;
-		case 1: addContent("<h2>" + name + "</h2>", real_depth, false); break;
-		case 2: addContent("<h3>" + name + "</h3>", real_depth, false); break;
-		case 3: addContent("<h4>" + name + "</h4>", real_depth, false); break;
-		case 4: addContent("<h5>" + name + "</h5>", real_depth, false); break;
-		default: addContent("<h6>" + name + "</h6>", real_depth, false); break;
+		case 0: addContent("<button type=\"button\" class=\"collapsible\"><h1>" + name + "</h1></button>", real_depth, false); break;
+		case 1: addContent("<button type=\"button\" class=\"collapsible\"><h2>" + name + "</h2></button>", real_depth, false); break;
+		case 2: addContent("<button type=\"button\" class=\"collapsible\"><h3>" + name + "</h3></button>", real_depth, false); break;
+		case 3: addContent("<button type=\"button\" class=\"collapsible\"><h4>" + name + "</h4></button>", real_depth, false); break;
+		case 4: addContent("<button type=\"button\" class=\"collapsible\"><h5>" + name + "</h5></button>", real_depth, false); break;
+		default: addContent("<button type=\"button\" class=\"collapsible\"><h6>" + name + "</h6></button>", real_depth, false); break;
 		}
+		
+		addContent("<div class=\"content\">", real_depth, false);
+		cat_depth++;
 	}
 
 	@Override
@@ -95,7 +105,7 @@ public class HtmlGenerator extends AbstractPatchNoteGenerator implements PatchNo
 		int real_depth = depth + 3;
 		
 		if(is_developer_comment)
-			addContent("<div class=\"devcom\">" + text + "</div>", real_depth + 3, false);
+			addContent("<div class=\"devcom\"><b><i>Developer Comments</b></i>: " + text + "</div>", real_depth + 3, false);
 		else
 			addContent("<div class=\"text\">" + text + "</div>", real_depth + 3, false);
 	}
@@ -112,6 +122,11 @@ public class HtmlGenerator extends AbstractPatchNoteGenerator implements PatchNo
 
 	@Override
 	public void finish() {
+		while(cat_depth > 0) {
+			addContent("</div>", 3, false);
+			cat_depth--;
+		}
+		
 		String scripts = "";
 		
 		if(Utils.displayYesNo("PatchGen: Script inclusion", "Do you need this HTML file to contain scripts? If you chose the 'basic' CSS style, then it's associated script will automatically be added."))
