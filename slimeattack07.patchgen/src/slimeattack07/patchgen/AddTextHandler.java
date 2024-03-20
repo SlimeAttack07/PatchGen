@@ -1,3 +1,4 @@
+package slimeattack07.patchgen;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -15,9 +16,6 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
-import slimeattack07.patchgen.PatchNoteData;
-import slimeattack07.patchgen.Utils;
-
 public class AddTextHandler extends AbstractHandler {
 	
 	@Override
@@ -26,14 +24,29 @@ public class AddTextHandler extends AbstractHandler {
 		
 		String category = Utils.displayNotBlankInput("PatchGen: Add Text", "What category should this text be placed in?");
 		
+		if(category.equals("NOTHING")) {
+			Utils.displayWarning("PatchGen: Add Text", "User cancelled addition of text.");
+			return null;
+		}
+		
 		boolean is_developer_comment = Utils.displayYesNo("PatchGen: Add Text", "Should this be marked as a developer comment?");
 		
 		// TODO: Add support for formatting like bold, italics, etcetera.
 		String text = Utils.displayNotBlankInput("PatchGen: Add Text", "Please add your text");
 		
+		if(text.equals("NOTHING")) {
+			Utils.displayWarning("PatchGen: Add Text", "User cancelled addition of text.");
+			return null;
+		}
+		
 		String id = Utils.displayNotBlankInput("PatchGen: Add Text", "Please assign an id to this text."
 				+ "This will help you determine whether another developer already added text for the change you are "
 				+ "about to describe.");
+		
+		if(id.equals("NOTHING")) {
+			Utils.displayWarning("PatchGen: Add Text", "User cancelled addition of text.");
+			return null;
+		}
 		
 		if(processText(id, category, is_developer_comment, text))
 			Utils.displayInfo("PatchGen: Add Text", "Added text to file.");

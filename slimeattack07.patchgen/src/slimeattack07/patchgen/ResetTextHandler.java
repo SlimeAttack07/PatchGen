@@ -1,3 +1,4 @@
+package slimeattack07.patchgen;
 import java.io.ByteArrayInputStream;
 
 import org.eclipse.core.commands.AbstractHandler;
@@ -6,8 +7,6 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
-
-import slimeattack07.patchgen.Utils;
 
 public class ResetTextHandler extends AbstractHandler {
 

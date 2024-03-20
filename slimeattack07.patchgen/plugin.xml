@@ -72,11 +72,11 @@
             commandId="slimeattack07.patchgen.command_gencode">
       </handler>
       <handler
-            class="AddTextHandler"
+            class="slimeattack07.patchgen.AddTextHandler"
             commandId="slimeattack07.patchgen.command_addtext">
       </handler>
       <handler
-            class="ResetTextHandler"
+            class="slimeattack07.patchgen.ResetTextHandler"
             commandId="slimeattack07.patchgen.command_reset_text">
       </handler>
    </extension>
