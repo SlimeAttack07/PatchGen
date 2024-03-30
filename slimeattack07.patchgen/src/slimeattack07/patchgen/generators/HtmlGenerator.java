@@ -96,7 +96,11 @@ public class HtmlGenerator extends AbstractPatchNoteGenerator implements PatchNo
 		default: addContent("<button type=\"button\" class=\"collapsible\"><h6>" + name + "</h6></button>", real_depth, false); break;
 		}
 		
-		addContent("<div class=\"content\">", real_depth, false);
+		if(depth == 0)
+			addContent("<div class=\"content biggest\">", real_depth, false);
+		else
+			addContent("<div class=\"content\">", real_depth, false);
+		
 		cat_depth++;
 	}
 

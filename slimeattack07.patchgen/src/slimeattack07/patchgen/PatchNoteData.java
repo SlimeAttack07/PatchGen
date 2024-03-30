@@ -163,7 +163,7 @@ public class PatchNoteData {
 		gen.finish();
 		
 		if(Utils.displayYesNo("PatchGen: Reset text file", "Would you like to clear the text.json file to start fresh for the next patch? You can always use the 'ResetText' button to do this at any time yourself.")) {
-			IFile ifile = Utils.requestFile(project, "data", "text", ".json");
+			IFile ifile = Utils.requestFile(project, "data", "text", "json");
 			
 			if(ifile.exists())
 				try {
@@ -528,8 +528,12 @@ public class PatchNoteData {
 					if(!temp1.equals(temp2)) {
 						int prio1 = getPrio(temp1);
 						int prio2 = getPrio(temp2);
+						int result = Integer.compare(prio1, prio2);
 						
-						return Integer.compare(prio1, prio2);
+						if(result != 0)
+							return result;
+						
+						return cats.getName(temp1).compareToIgnoreCase(cats.getName(temp2));
 					}
 					
 					temp1 += ".";

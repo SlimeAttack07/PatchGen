@@ -301,7 +301,7 @@ public class GenerateHandler extends AbstractHandler {
 		
 		while(!accepted) {
 			System.out.println("Comparison: Specify version to compare to:");
-			old_version = Utils.displayNotBlankInput("Version input", "Specify version to compare to. Enter 'cancel' to cancel.", "categories");
+			old_version = Utils.displayNotBlankInput("Version input", "Specify version to compare to. Type 'cancel' to cancel.", "categories");
 
 			// TODO: Add way to determine if other versions even exist to compare to.
 			if (old_version.toLowerCase().equals("cancel")) {

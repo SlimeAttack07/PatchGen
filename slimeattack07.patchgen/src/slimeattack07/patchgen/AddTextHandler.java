@@ -56,7 +56,7 @@ public class AddTextHandler extends AbstractHandler {
 
 	private boolean processText(String id, String category, boolean devcom, String text) {
 		IProject project = Utils.getProject();
-		IFile ifile = Utils.requestFile(project, "data", "text", ".json");
+		IFile ifile = Utils.requestFile(project, "data", "text", "json");
 		JsonArray arr = new JsonArray();
 		
 		if(ifile.exists()) {

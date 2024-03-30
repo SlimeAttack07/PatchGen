@@ -18,7 +18,7 @@ public class ResetTextHandler extends AbstractHandler {
 			return null;
 		
 		if(Utils.displayYesNo("PatchGen: Reset text file", "Would you like to clear the text.json file to start fresh for the next patch?")) {
-			IFile ifile = Utils.requestFile(project, "data", "text", ".json");
+			IFile ifile = Utils.requestFile(project, "data", "text", "json");
 			
 			if(ifile.exists())
 				try {
