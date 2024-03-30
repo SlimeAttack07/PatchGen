@@ -88,7 +88,7 @@ public class HtmlGenerator extends AbstractPatchNoteGenerator implements PatchNo
 		
 		// HTML supports up to 6 heading levels, so anything above level 5 is defaulted to max level 6.
 		switch(depth) {
-		case 0: addContent("<button type=\"button\" class=\"collapsible\"><h1>" + name + "</h1></button>", real_depth, false); break;
+		case 0: addContent("<button type=\"button\" class=\"collapsible biggest\"><h1>" + name + "</h1></button>", real_depth, false); break;
 		case 1: addContent("<button type=\"button\" class=\"collapsible\"><h2>" + name + "</h2></button>", real_depth, false); break;
 		case 2: addContent("<button type=\"button\" class=\"collapsible\"><h3>" + name + "</h3></button>", real_depth, false); break;
 		case 3: addContent("<button type=\"button\" class=\"collapsible\"><h4>" + name + "</h4></button>", real_depth, false); break;
