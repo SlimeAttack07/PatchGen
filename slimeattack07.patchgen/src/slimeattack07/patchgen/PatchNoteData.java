@@ -295,7 +295,7 @@ public class PatchNoteData {
 	 */
 	@Nullable
 	private JsonArray retrieveText(IProject project) {
-		IFile ifile = Utils.requestFile(project, "data", "text", ".json");
+		IFile ifile = Utils.requestFile(project, "data", "text", "json");
 		
 		if(ifile.exists()) {
 			try(Reader reader = new InputStreamReader(ifile.getContents());){
